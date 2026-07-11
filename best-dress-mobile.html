@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Best Dress · 票选之夜</title>
+<style>
+:root{
+  --ink:#0d0714;
+  --velvet:#190d2a;
+  --gold:#e9c974;
+  --gold-hi:#f7e3a8;
+  --gold-deep:#b8933f;
+  --rose:#ef7fae;
+  --ivory:#f7f1e3;
+  --dim:rgba(247,241,227,0.66);
+  --danger:#ff6d7f;
+  --ok:#5fdfa0;
+  --scrim-b:linear-gradient(to top, rgba(10,5,18,0.92) 0%, rgba(10,5,18,0.55) 34%, rgba(10,5,18,0) 62%);
+  --scrim-t:linear-gradient(to bottom, rgba(10,5,18,0.75) 0%, rgba(10,5,18,0) 100%);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC",sans-serif;
+  background:var(--ink);color:var(--ivory);
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;
+}
+.serif{font-family:"Didot","Bodoni 72",Georgia,"Songti SC","Noto Serif SC",serif}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* ================= FEED ================= */
+#feed{
+  height:100dvh;width:100%;
+  overflow-y:auto;scroll-snap-type:y mandatory;
+  scrollbar-width:none;
+}
+#feed::-webkit-scrollbar{display:none}
+.slide{
+  position:relative;height:100dvh;width:100%;
+  scroll-snap-align:start;scroll-snap-stop:always;
+  overflow:hidden;
+  background:radial-gradient(120% 90% at 50% 20%, #2a1544 0%, var(--ink) 70%);
+}
+.slide .media{position:absolute;inset:0}
+.slide .media img,.slide .media video{width:100%;height:100%;object-fit:cover}
+.slide .scrim-b{position:absolute;inset:0;background:var(--scrim-b);pointer-events:none}
+.slide .scrim-t{position:absolute;left:0;right:0;top:0;height:140px;background:var(--scrim-t);pointer-events:none}
+
+/* 无影像时的高级占位 */
+.placeholder{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+.placeholder .big-num{
+  font-size:clamp(120px,38vw,200px);line-height:1;font-weight:400;
+  background:linear-gradient(160deg, rgba(233,201,116,0.5), rgba(233,201,116,0.06) 75%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.placeholder .ph-label{font-size:12px;letter-spacing:.4em;color:rgba(247,241,227,0.35);text-transform:uppercase}
+
+/* ---------- 顶部栏 ---------- */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(12px + env(safe-area-inset-top)) 18px 10px;
+  pointer-events:none;
+}
+.topbar>*{pointer-events:auto}
+.brand{display:flex;flex-direction:column;line-height:1.2}
+.brand .eyebrow{font-size:9.5px;letter-spacing:.42em;color:var(--gold);text-transform:uppercase}
+.brand .name{font-size:17px;color:var(--ivory)}
+.top-right{display:flex;align-items:center;gap:9px}
+.tickets{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(13,7,20,0.55);border:1px solid rgba(233,201,116,0.35);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;
+}
+.ticket-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);transition:.3s}
+.ticket-dot.used{background:rgba(255,255,255,0.18);box-shadow:none}
+.gear{
+  width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,0.18);
+  background:rgba(13,7,20,0.55);backdrop-filter:blur(12px);color:var(--dim);
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ---------- 底部信息区 ---------- */
+.info{
+  position:absolute;left:0;right:86px;bottom:0;z-index:5;
+  padding:0 20px calc(30px + env(safe-area-inset-bottom));
+}
+.info .no{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;letter-spacing:.34em;color:var(--gold);text-transform:uppercase;
+  margin-bottom:10px;
+}
+.info .no::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+.info .cname{
+  font-size:clamp(34px,9.6vw,46px);line-height:1.06;font-weight:500;
+  text-shadow:0 2px 24px rgba(0,0,0,0.5);
+  margin-bottom:12px;
+}
+.info .meta{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dim)}
+.info .meta b{color:var(--gold-hi);font-size:16px;font-weight:800}
+.lead-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:linear-gradient(120deg,var(--gold),var(--gold-deep));color:#241033;
+  border-radius:999px;padding:4px 11px;font-size:11px;font-weight:800;letter-spacing:.05em;
+  animation:leadIn .5s cubic-bezier(.22,1.4,.36,1);
+}
+@keyframes leadIn{from{transform:scale(.6);opacity:0}}
+.mini-bar{height:3px;border-radius:99px;background:rgba(255,255,255,0.14);margin-top:14px;overflow:hidden;max-width:220px}
+.mini-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--rose));transition:width .7s cubic-bezier(.22,1,.36,1)}
+
+/* ---------- 右侧操作轨 ---------- */
+.rail{
+  position:absolute;right:14px;bottom:calc(34px + env(safe-area-inset-bottom));z-index:6;
+  display:flex;flex-direction:column;align-items:center;gap:20px;
+}
+.vote-btn{
+  width:66px;height:66px;border-radius:50%;border:none;position:relative;
+  background:linear-gradient(145deg,var(--gold-hi),var(--gold) 45%,var(--gold-deep));
+  box-shadow:0 8px 26px rgba(233,201,116,0.4), inset 0 1px 1px rgba(255,255,255,0.55);
+  display:flex;align-items:center;justify-content:center;color:#2a1033;
+  transition:transform .14s;
+}
+.vote-btn:active{transform:scale(.9)}
+.vote-btn.voted{
+  background:rgba(20,10,32,0.66);border:1.5px solid var(--gold);color:var(--gold);
+  box-shadow:none;backdrop-filter:blur(8px);
+}
+.vote-btn.locked{
+  background:rgba(20,10,32,0.55);border:1.5px solid rgba(255,255,255,0.16);color:rgba(255,255,255,0.32);
+  box-shadow:none;backdrop-filter:blur(8px);
+}
+.rail .v-label{font-size:11.5px;font-weight:700;color:var(--ivory);text-shadow:0 1px 6px rgba(0,0,0,.6);margin-top:-12px}
+.rail .v-num{font-size:15px;font-weight:800;color:var(--gold-hi)}
+.sound-btn,.rank-btn{
+  width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);
+  background:rgba(13,7,20,0.5);backdrop-filter:blur(10px);color:var(--ivory);
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* 双击/投票 心形爆发 */
+.burst{
+  position:absolute;pointer-events:none;z-index:30;
+  transform:translate(-50%,-50%) scale(0);color:var(--gold);
+  animation:burst .8s cubic-bezier(.17,.89,.32,1.28) forwards;
+  filter:drop-shadow(0 4px 18px rgba(233,201,116,0.6));
+}
+@keyframes burst{
+  20%{transform:translate(-50%,-50%) scale(1.25) rotate(-8deg);opacity:1}
+  100%{transform:translate(-50%,-140%) scale(.9) rotate(6deg);opacity:0}
+}
+
+/* ---------- 滑动提示 & 进度 ---------- */
+.swipe-hint{
+  position:absolute;bottom:calc(120px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
+  z-index:6;display:flex;flex-direction:column;align-items:center;gap:5px;
+  color:rgba(247,241,227,0.55);font-size:11px;letter-spacing:.2em;
+  animation:floatUp 2.4s ease-in-out infinite;pointer-events:none;
+}
+@keyframes floatUp{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+.progress{
+  position:fixed;right:6px;top:50%;transform:translateY(-50%);z-index:35;
+  display:flex;flex-direction:column;gap:7px;pointer-events:none;
+}
+.progress i{width:3px;height:14px;border-radius:99px;background:rgba(255,255,255,0.18);transition:.3s}
+.progress i.on{background:var(--gold);height:24px;box-shadow:0 0 8px rgba(233,201,116,0.5)}
+
+/* ================= 榜单页(最后一屏) ================= */
+.board{
+  position:relative;display:flex;flex-direction:column;justify-content:center;
+  padding:90px 24px calc(40px + env(safe-area-inset-bottom));
+}
+.board::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(90% 55% at 50% 0%, rgba(233,201,116,0.14), transparent 65%),
+    radial-gradient(70% 45% at 85% 100%, rgba(239,127,174,0.12), transparent 60%);
+  pointer-events:none;
+}
+.board h2{font-size:12px;letter-spacing:.42em;color:var(--gold);text-transform:uppercase;text-align:center}
+.board .bt{font-size:34px;text-align:center;margin:8px 0 26px}
+.brow{
+  display:flex;align-items:center;gap:13px;padding:13px 15px;margin-bottom:9px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);
+  border-radius:16px;backdrop-filter:blur(10px);position:relative;overflow:hidden;
+}
+.brow.first{
+  border-color:rgba(233,201,116,0.55);
+  background:linear-gradient(120deg, rgba(233,201,116,0.14), rgba(255,255,255,0.04) 60%);
+}
+.brow .pos{width:30px;font-size:15px;font-weight:800;color:var(--dim);text-align:center;flex-shrink:0}
+.brow.first .pos{color:var(--gold);font-size:19px}
+.brow .bn{flex:1;min-width:0}
+.brow .bn .nm{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .bn .bar{height:4px;border-radius:99px;background:rgba(255,255,255,0.1);margin-top:7px;overflow:hidden}
+.brow .bn .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--rose))}
+.brow .bv{font-size:17px;font-weight:800;color:var(--gold-hi);flex-shrink:0}
+.brow .bp{font-size:11px;color:var(--dim);margin-left:2px;font-weight:500}
+
+/* ================= 空状态 ================= */
+.empty-slide{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:0 32px}
+.empty-slide .ring{
+  width:120px;height:120px;border-radius:50%;
+  border:1px solid rgba(233,201,116,0.4);
+  display:flex;align-items:center;justify-content:center;color:var(--gold);
+  box-shadow:0 0 60px rgba(233,201,116,0.12), inset 0 0 30px rgba(233,201,116,0.06);
+}
+.empty-slide p{color:var(--dim);font-size:14px;line-height:1.7}
+
+/* ================= 通用按钮/表单 ================= */
+.btn{
+  appearance:none;border:none;border-radius:15px;font-size:15px;font-weight:700;
+  padding:14px 18px;min-height:50px;width:100%;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .13s,opacity .2s;
+}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4}
+.btn-gold{background:linear-gradient(120deg,var(--gold-hi),var(--gold) 50%,var(--gold-deep));color:#2a1033;box-shadow:0 6px 20px rgba(233,201,116,0.28)}
+.btn-ghost{background:rgba(255,255,255,0.08);color:var(--ivory);border:1px solid rgba(255,255,255,0.15)}
+.btn-danger{background:rgba(255,109,127,0.13);color:var(--danger);border:1px solid rgba(255,109,127,0.4)}
+.btn-sm{min-height:42px;padding:9px 15px;font-size:13px;width:auto;border-radius:12px}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:12.5px;color:var(--dim);margin-bottom:7px;font-weight:600;letter-spacing:.04em}
+.field input{
+  width:100%;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.15);
+  border-radius:13px;color:var(--ivory);font-size:16px;padding:14px;font-family:inherit;
+}
+.field input:focus{outline:none;border-color:var(--gold)}
+.err{color:var(--danger);font-size:13px;margin-top:7px;display:none}
+.err.show{display:block}
+.hint{font-size:12px;color:var(--dim);line-height:1.65;margin-top:10px}
+
+/* ================= 全屏面板(后台/相机) ================= */
+.sheet{
+  position:fixed;inset:0;z-index:80;display:none;flex-direction:column;
+  background:linear-gradient(165deg,#221037 0%,var(--ink) 60%);
+}
+.sheet.open{display:flex}
+.sheet-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(14px + env(safe-area-inset-top)) 20px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;
+}
+.sheet-head .t{font-size:18px;font-weight:700}
+.sheet-head .close-x{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:var(--ivory);width:38px;height:38px;border-radius:50%;font-size:20px;line-height:1}
+.sheet-body{flex:1;overflow-y:auto;padding:20px 20px calc(30px + env(safe-area-inset-bottom))}
+
+.section-title{
+  font-size:11.5px;font-weight:800;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;
+  margin:26px 0 13px;display:flex;align-items:center;gap:10px;
+}
+.section-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(233,201,116,0.35),transparent)}
+.section-title:first-child{margin-top:4px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:16px 10px;text-align:center}
+.stat .v{font-size:26px;font-weight:800;color:var(--gold-hi)}
+.stat .l{font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.05em}
+.admin-item{
+  display:flex;align-items:center;gap:13px;padding:12px;margin-bottom:10px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:16px;
+}
+.admin-thumb{
+  width:58px;height:74px;border-radius:11px;background:#241237;flex-shrink:0;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;color:var(--dim);
+}
+.admin-thumb img,.admin-thumb video{width:100%;height:100%;object-fit:cover}
+.icon-btn{
+  width:44px;height:44px;border-radius:13px;flex-shrink:0;
+  border:1px solid rgba(255,109,127,0.4);background:rgba(255,109,127,0.1);color:var(--danger);
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ---------- 相机 ---------- */
+.cam-stage{position:relative;width:100%;aspect-ratio:3/4;background:#000;border-radius:20px;overflow:hidden;margin-bottom:16px}
+.cam-stage video,.cam-stage img{width:100%;height:100%;object-fit:cover}
+.rec-dot{
+  position:absolute;top:14px;left:14px;display:none;align-items:center;gap:7px;
+  background:rgba(0,0,0,0.6);border-radius:99px;padding:6px 13px;font-size:13px;font-weight:700;
+}
+.rec-dot.on{display:flex}
+.rec-dot i{width:9px;height:9px;border-radius:50%;background:var(--danger);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.cam-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cam-controls .full{grid-column:1/-1}
+
+/* ---------- Toast ---------- */
+.toast{
+  position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-14px);
+  background:rgba(24,12,38,0.92);border:1px solid rgba(233,201,116,0.4);color:var(--ivory);
+  padding:12px 22px;border-radius:99px;font-size:13.5px;font-weight:600;
+  opacity:0;pointer-events:none;transition:.32s;z-index:200;max-width:88%;text-align:center;
+  backdrop-filter:blur(10px);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.loading-screen{
+  position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:radial-gradient(120% 90% at 50% 20%, #2a1544 0%, var(--ink) 70%);
+}
+.spinner{width:30px;height:30px;border:2.5px solid rgba(233,201,116,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen .lt{font-size:12px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- 载入 -->
+<div class="loading-screen" id="loader">
+  <div class="serif" style="font-size:30px">Best Dress</div>
+  <div class="spinner"></div>
+  <div class="lt">Loading</div>
+</div>
+
+<!-- 顶部栏 -->
+<div class="topbar">
+  <div class="brand">
+    <span class="eyebrow serif">Best Dress Award</span>
+    <span class="name serif">票选之夜</span>
+  </div>
+  <div class="top-right">
+    <div class="tickets" aria-label="剩余票数">
+      <span class="ticket-dot" id="tk0"></span>
+      <span class="ticket-dot" id="tk1"></span>
+      <span id="tkLabel">2 票</span>
+    </div>
+    <button class="gear" onclick="App.openAdmin()" aria-label="后台管理">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- 右侧进度点 -->
+<div class="progress" id="progress"></div>
+
+<!-- 主 Feed -->
+<div id="feed"></div>
+
+<!-- ============ 后台 ============ -->
+<div class="sheet" id="adminSheet">
+  <div class="sheet-head">
+    <span class="t serif">后台管理</span>
+    <button class="close-x" onclick="App.closeSheet('adminSheet')" aria-label="关闭">×</button>
+  </div>
+  <div class="sheet-body">
+    <div id="adminGate">
+      <div class="field" style="margin-top:6px">
+        <label for="pinInput" id="gateSub">请输入管理 PIN 码</label>
+        <input id="pinInput" type="password" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
+        <div class="err" id="pinErr">PIN 码不正确</div>
+      </div>
+      <button class="btn btn-gold" onclick="App.checkPin()">进入后台</button>
+    </div>
+
+    <div id="adminPanel" style="display:none">
+      <div class="section-title">实时数据</div>
+      <div class="stat-grid">
+        <div class="stat"><div class="v" id="stTotal">0</div><div class="l">总票数</div></div>
+        <div class="stat"><div class="v" id="stVoters">0</div><div class="l">投票人数</div></div>
+        <div class="stat"><div class="v" id="stContestants">0</div><div class="l">参赛选手</div></div>
+      </div>
+
+      <div class="section-title">选手管理</div>
+      <button class="btn btn-gold" style="margin-bottom:13px" onclick="App.openEdit(null)">＋ 新增选手</button>
+      <div id="adminList"></div>
+
+      <div class="section-title">危险操作</div>
+      <button class="btn btn-danger" onclick="App.resetVotes()">清空所有投票记录</button>
+      <p class="hint">清空后票数全部归零,每位观众重新获得 2 票。此操作无法撤销。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 编辑选手 ============ -->
+<div class="sheet" id="editSheet">
+  <div class="sheet-head">
+    <span class="t serif" id="editTitle">新增选手</span>
+    <button class="close-x" onclick="App.closeSheet('editSheet')" aria-label="关闭">×</button>
+  </div>
+  <div class="sheet-body">
+    <div class="field">
+      <label for="editNum">参赛号码</label>
+      <input id="editNum" type="text" inputmode="numeric" placeholder="例如:01" maxlength="6">
+    </div>
+    <div class="field">
+      <label for="editName">选手名字</label>
+      <input id="editName" type="text" placeholder="例如:Sophia" maxlength="24">
+      <div class="err" id="editErr"></div>
+    </div>
+    <button class="btn btn-gold" onclick="App.saveContestant()">保存</button>
+  </div>
+</div>
+
+<!-- ============ 拍摄 ============ -->
+<div class="sheet" id="camSheet">
+  <div class="sheet-head">
+    <span class="t serif">拍摄 · <span id="camWho"></span></span>
+    <button class="close-x" onclick="App.closeCam()" aria-label="关闭">×</button>
+  </div>
+  <div class="sheet-body">
+    <div class="cam-stage">
+      <video id="camPreview" autoplay playsinline muted></video>
+      <img id="camPhoto" style="display:none" alt="拍摄预览">
+      <video id="camPlayback" style="display:none" controls playsinline></video>
+      <div class="rec-dot" id="recDot"><i></i><span id="recTime">0s</span></div>
+    </div>
+    <div class="cam-controls" id="camControls">
+      <button class="btn btn-ghost" onclick="App.snapPhoto()">拍照</button>
+      <button class="btn btn-gold" id="recBtn" onclick="App.toggleRecord()">● 录像 15s</button>
+      <button class="btn btn-ghost full" onclick="document.getElementById('fileInput').click()">从相册上传照片 / 视频</button>
+      <input type="file" id="fileInput" accept="image/*,video/*" style="display:none" onchange="App.onFile(this)">
+    </div>
+    <div class="cam-controls" id="confirmControls" style="display:none">
+      <button class="btn btn-ghost" onclick="App.retake()">重拍</button>
+      <button class="btn btn-gold" id="useMediaBtn" onclick="App.useMedia()">使用这段</button>
+    </div>
+    <p class="hint" id="camHint">视频最长 15 秒,自动压缩后同步给所有观众。如相机无法打开,请使用「从相册上传」。</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   Best Dress · 手机全屏滑动版
+   存储结构与 v1 完全兼容:
+   shared: contestants / media:{id} / ballot:{voterId} / settings
+   personal: my-voter-id / my-votes
+   ========================================================= */
+const MAX_VOTES = 2;
+const MAX_MEDIA_BYTES = 4*1024*1024;
+const MAX_REC_SECONDS = 15;
+
+const App = {
+  contestants:[], tally:{}, totalVotes:0, voterCount:0,
+  myVotes:[], voterId:null, settings:null,
+  adminUnlocked:false, editingId:null,
+  camTargetId:null, stream:null, recorder:null, recChunks:[], recTimer:null, pendingMedia:null,
+  muted:true, observer:null,
+
+  uuid(){ return 'v-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9); },
+  esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+  toast(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.classList.add('show');
+    clearTimeout(this._tt); this._tt=setTimeout(()=>t.classList.remove('show'),2500);
+  },
+  async sGet(k,sh){ try{const r=await window.storage.get(k,!!sh);return r?JSON.parse(r.value):null;}catch(e){return null;} },
+  async sSet(k,v,sh){ try{return await window.storage.set(k,JSON.stringify(v),!!sh);}catch(e){return null;} },
+  async sDel(k,sh){ try{return await window.storage.delete(k,!!sh);}catch(e){return null;} },
+  async sList(p,sh){ try{const r=await window.storage.list(p,!!sh);return r?r.keys:[];}catch(e){return [];} },
+
+  /* ---------- init ---------- */
+  async init(){
+    this.voterId = await this.sGet('my-voter-id',false);
+    if(!this.voterId){ this.voterId=this.uuid(); await this.sSet('my-voter-id',this.voterId,false); }
+    this.myVotes = (await this.sGet('my-votes',false))||[];
+    this.settings = await this.sGet('settings',true);
+    await this.refresh(true);
+    document.getElementById('loader').style.display='none';
+    setInterval(()=>{ if(!document.querySelector('.sheet.open')) this.refresh(false); },20000);
+  },
+
+  async refresh(rebuild){
+    this.contestants = (await this.sGet('contestants',true))||[];
+    const keys = await this.sList('ballot:',true);
+    const tally={}; let total=0;
+    for(const k of keys){
+      const votes = await this.sGet(k,true);
+      if(Array.isArray(votes)) for(const cid of votes.slice(0,MAX_VOTES)){ tally[cid]=(tally[cid]||0)+1; total++; }
+    }
+    this.tally=tally; this.totalVotes=total; this.voterCount=keys.length;
+    const mine = await this.sGet('ballot:'+this.voterId,true);
+    if(Array.isArray(mine)) this.myVotes=mine;
+
+    if(rebuild || this._lastCount!==this.contestants.length){ this.buildFeed(); this._lastCount=this.contestants.length; }
+    else this.updateFeed();
+    this.updateTickets();
+    if(this.adminUnlocked) this.renderAdmin();
+  },
+
+  updateTickets(){
+    const used = this.myVotes.length;
+    document.getElementById('tk0').classList.toggle('used', used>=1);
+    document.getElementById('tk1').classList.toggle('used', used>=2);
+    document.getElementById('tkLabel').textContent = Math.max(0,MAX_VOTES-used)+' 票';
+  },
+
+  leaderId(){
+    if(!this.totalVotes) return null;
+    return this.contestants.reduce((a,b)=>(this.tally[b.id]||0)>(this.tally[a.id]||0)?b:a).id;
+  },
+
+  /* ---------- Feed ---------- */
+  buildFeed(){
+    const feed=document.getElementById('feed');
+    if(this.observer) this.observer.disconnect();
+
+    if(!this.contestants.length){
+      feed.innerHTML=`<section class="slide"><div class="empty-slide">
+        <div class="ring"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 2l2.4 5.8L20 9l-4.4 4 1.2 6-4.8-3.2L7.2 19l1.2-6L4 9l5.6-1.2z"/></svg></div>
+        <div class="serif" style="font-size:26px">舞台已就绪</div>
+        <p>还没有参赛选手。<br>点右上角齿轮进入后台,新增选手并拍摄她们的造型。</p>
+      </div></section>`;
+      document.getElementById('progress').innerHTML='';
+      return;
+    }
+
+    const maxV=Math.max(1,...this.contestants.map(c=>this.tally[c.id]||0));
+    const lead=this.leaderId();
+
+    feed.innerHTML = this.contestants.map((c,idx)=>{
+      const v=this.tally[c.id]||0;
+      return `<section class="slide" data-cid="${c.id}" data-idx="${idx}">
+        <div class="media" id="media-${c.id}" ondblclick="App.vote('${c.id}',event)">
+          <div class="placeholder">
+            <div class="big-num serif">${this.esc(c.num)}</div>
+            <div class="ph-label">Awaiting the runway</div>
+          </div>
+        </div>
+        <div class="scrim-t"></div>
+        <div class="scrim-b"></div>
+        ${idx===0 && this.contestants.length>1 ? `<div class="swipe-hint"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 11l-5-5-5 5M17 18l-5-5-5 5"/></svg>上滑看下一位</div>`:''}
+        <div class="info">
+          <div class="no serif">Contestant No.${this.esc(c.num)}</div>
+          <div class="cname serif">${this.esc(c.name)}</div>
+          <div class="meta">
+            <span><b id="vnum-${c.id}">${v}</b> 票</span>
+            <span id="lead-${c.id}">${c.id===lead&&v>0?'<span class="lead-tag">★ 当前领先</span>':''}</span>
+          </div>
+          <div class="mini-bar"><i id="vbar-${c.id}" style="width:${Math.round(v/maxV*100)}%"></i></div>
+        </div>
+        <div class="rail">
+          <button class="sound-btn" onclick="App.toggleMute()" aria-label="声音开关" id="snd-${c.id}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+          </button>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+            <button class="vote-btn" id="vb-${c.id}" onclick="App.vote('${c.id}',event)" aria-label="为${this.esc(c.name)}投票">
+              <svg width="27" height="27" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 8.6a5.5 5.5 0 0 0-9.8-3.4A5.5 5.5 0 0 0 3.2 12.9L12 21l8-7.4a5.5 5.5 0 0 0 .8-5z"/></svg>
+            </button>
+            <span class="v-label" id="vlabel-${c.id}">投票</span>
+          </div>
+        </div>
+      </section>`;
+    }).join('') + this.boardSlide();
+
+    document.getElementById('progress').innerHTML =
+      this.contestants.map((_,i)=>`<i id="pg-${i}" class="${i===0?'on':''}"></i>`).join('')+`<i id="pg-board"></i>`;
+
+    this.contestants.forEach(c=>{ if(c.hasMedia) this.loadMedia(c.id); this.paintVoteBtn(c.id); });
+    this.setupObserver();
+  },
+
+  boardSlide(){
+    const sorted=[...this.contestants].sort((a,b)=>(this.tally[b.id]||0)-(this.tally[a.id]||0));
+    const maxV=Math.max(1,...sorted.map(c=>this.tally[c.id]||0));
+    return `<section class="slide board" data-idx="board">
+      <h2 class="serif">Live Ranking</h2>
+      <div class="bt serif">实时排行榜</div>
+      <div>${sorted.map((c,i)=>{
+        const v=this.tally[c.id]||0;
+        const pct=this.totalVotes?Math.round(v/this.totalVotes*100):0;
+        return `<div class="brow ${i===0&&v>0?'first':''}">
+          <div class="pos serif">${i+1}</div>
+          <div class="bn">
+            <div class="nm">No.${this.esc(c.num)} · ${this.esc(c.name)}</div>
+            <div class="bar"><i style="width:${Math.round(v/maxV*100)}%"></i></div>
+          </div>
+          <div><span class="bv">${v}</span><span class="bp">${pct}%</span></div>
+        </div>`;
+      }).join('')}</div>
+      <p class="hint" style="text-align:center;margin-top:16px">共 ${this.totalVotes} 票 · ${this.voterCount} 人参与 · 每 20 秒自动更新</p>
+    </section>`;
+  },
+
+  updateFeed(){
+    const maxV=Math.max(1,...this.contestants.map(c=>this.tally[c.id]||0));
+    const lead=this.leaderId();
+    this.contestants.forEach(c=>{
+      const v=this.tally[c.id]||0;
+      const vn=document.getElementById('vnum-'+c.id);
+      const vb=document.getElementById('vbar-'+c.id);
+      const ld=document.getElementById('lead-'+c.id);
+      if(vn) vn.textContent=v;
+      if(vb) vb.style.width=Math.round(v/maxV*100)+'%';
+      if(ld) ld.innerHTML = c.id===lead&&v>0?'<span class="lead-tag">★ 当前领先</span>':'';
+      this.paintVoteBtn(c.id);
+    });
+    // 更新榜单页
+    const board=document.querySelector('[data-idx="board"]');
+    if(board){ board.outerHTML=this.boardSlide(); }
+  },
+
+  paintVoteBtn(cid){
+    const btn=document.getElementById('vb-'+cid);
+    const label=document.getElementById('vlabel-'+cid);
+    if(!btn) return;
+    const voted=this.myVotes.includes(cid);
+    const exhausted=this.myVotes.length>=MAX_VOTES;
+    btn.classList.toggle('voted',voted);
+    btn.classList.toggle('locked',!voted&&exhausted);
+    if(label) label.textContent = voted?'已投':(exhausted?'已满':'投票');
+    btn.innerHTML = voted
+      ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><path d="M20 6L9 17l-5-5"/></svg>`
+      : `<svg width="27" height="27" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 8.6a5.5 5.5 0 0 0-9.8-3.4A5.5 5.5 0 0 0 3.2 12.9L12 21l8-7.4a5.5 5.5 0 0 0 .8-5z"/></svg>`;
+  },
+
+  async loadMedia(cid){
+    const box=document.getElementById('media-'+cid);
+    if(!box) return;
+    const m=await this.sGet('media:'+cid,true);
+    if(!m||!document.getElementById('media-'+cid)) return;
+    box.innerHTML = m.type==='video'
+      ? `<video src="${m.data}" loop muted playsinline preload="metadata"></video>`
+      : `<img src="${m.data}" alt="选手展示">`;
+    this.setupObserver();
+  },
+
+  setupObserver(){
+    if(this.observer) this.observer.disconnect();
+    this.observer=new IntersectionObserver(entries=>{
+      entries.forEach(en=>{
+        const idx=en.target.dataset.idx;
+        const vid=en.target.querySelector('.media video');
+        if(en.isIntersecting){
+          if(vid){ vid.muted=this.muted; vid.play().catch(()=>{}); }
+          document.querySelectorAll('.progress i').forEach(i=>i.classList.remove('on'));
+          const pg=document.getElementById(idx==='board'?'pg-board':'pg-'+idx);
+          if(pg) pg.classList.add('on');
+        } else if(vid){ vid.pause(); }
+      });
+    },{threshold:0.6});
+    document.querySelectorAll('.slide').forEach(s=>this.observer.observe(s));
+  },
+
+  toggleMute(){
+    this.muted=!this.muted;
+    document.querySelectorAll('.media video').forEach(v=>v.muted=this.muted);
+    this.toast(this.muted?'已静音':'声音已开启');
+  },
+
+  /* ---------- 投票 ---------- */
+  async vote(cid,ev){
+    if(this.myVotes.includes(cid)){ this.toast('你已经投过这位选手了'); return; }
+    if(this.myVotes.length>=MAX_VOTES){ this.toast('每人只能投 '+MAX_VOTES+' 票哦'); return; }
+    const mine=(await this.sGet('ballot:'+this.voterId,true))||[];
+    if(mine.length>=MAX_VOTES||mine.includes(cid)){ this.myVotes=mine; this.updateFeed(); this.updateTickets(); this.toast('每人只能投 '+MAX_VOTES+' 票哦'); return; }
+
+    const newVotes=[...mine,cid];
+    const ok=await this.sSet('ballot:'+this.voterId,newVotes,true);
+    if(!ok){ this.toast('投票失败,请检查网络后重试'); return; }
+    await this.sSet('my-votes',newVotes,false);
+    this.myVotes=newVotes;
+    this.tally[cid]=(this.tally[cid]||0)+1; this.totalVotes++;
+
+    // 金心爆发动画
+    const x=ev&&ev.clientX?ev.clientX:innerWidth/2;
+    const y=ev&&ev.clientY?ev.clientY:innerHeight/2;
+    const b=document.createElement('div');
+    b.className='burst'; b.style.left=x+'px'; b.style.top=y+'px';
+    b.innerHTML=`<svg width="72" height="72" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 8.6a5.5 5.5 0 0 0-9.8-3.4A5.5 5.5 0 0 0 3.2 12.9L12 21l8-7.4a5.5 5.5 0 0 0 .8-5z"/></svg>`;
+    document.body.appendChild(b); setTimeout(()=>b.remove(),850);
+    if(navigator.vibrate) navigator.vibrate(24);
+
+    const c=this.contestants.find(x=>x.id===cid);
+    this.toast(`已为 No.${c?c.num:''} ${c?c.name:''} 投出一票 · 剩 ${MAX_VOTES-newVotes.length} 票`);
+    this.updateFeed(); this.updateTickets();
+  },
+
+  /* ---------- 后台 ---------- */
+  openAdmin(){
+    document.getElementById('adminSheet').classList.add('open');
+    if(!this.adminUnlocked){
+      const first=!this.settings||!this.settings.pin;
+      document.getElementById('gateSub').textContent = first?'首次使用,请设置 4-8 位管理 PIN 码':'请输入管理 PIN 码';
+      document.getElementById('adminGate').style.display='';
+      document.getElementById('adminPanel').style.display='none';
+    } else this.renderAdmin();
+  },
+  closeSheet(id){ document.getElementById(id).classList.remove('open'); },
+
+  async checkPin(){
+    const pin=document.getElementById('pinInput').value.trim();
+    const err=document.getElementById('pinErr'); err.classList.remove('show');
+    if(!this.settings||!this.settings.pin){
+      if(!/^\d{4,8}$/.test(pin)){ err.textContent='请输入 4-8 位数字作为 PIN'; err.classList.add('show'); return; }
+      this.settings={pin}; await this.sSet('settings',this.settings,true);
+      this.toast('PIN 设置成功');
+    } else if(pin!==this.settings.pin){ err.textContent='PIN 码不正确'; err.classList.add('show'); return; }
+    this.adminUnlocked=true;
+    document.getElementById('adminGate').style.display='none';
+    document.getElementById('adminPanel').style.display='';
+    document.getElementById('pinInput').value='';
+    this.renderAdmin();
+  },
+
+  renderAdmin(){
+    document.getElementById('stTotal').textContent=this.totalVotes;
+    document.getElementById('stVoters').textContent=this.voterCount;
+    document.getElementById('stContestants').textContent=this.contestants.length;
+    document.getElementById('adminList').innerHTML=this.contestants.map(c=>`
+      <div class="admin-item">
+        <div class="admin-thumb" id="thumb-${c.id}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700">No.${this.esc(c.num)} · ${this.esc(c.name)}</div>
+          <div style="font-size:12px;color:var(--dim);margin-top:3px">${this.tally[c.id]||0} 票 · ${c.hasMedia?'已有影像':'未拍摄'}</div>
+          <div style="display:flex;gap:8px;margin-top:9px">
+            <button class="btn btn-ghost btn-sm" onclick="App.openCam('${c.id}')">拍摄</button>
+            <button class="btn btn-ghost btn-sm" onclick="App.openEdit('${c.id}')">编辑</button>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="App.deleteContestant('${c.id}')" aria-label="删除">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div>`).join('')||`<p class="hint">还没有选手,点上方「新增选手」。</p>`;
+    this.contestants.filter(c=>c.hasMedia).forEach(async c=>{
+      const m=await this.sGet('media:'+c.id,true);
+      const el=document.getElementById('thumb-'+c.id);
+      if(m&&el) el.innerHTML=m.type==='video'?`<video src="${m.data}" muted></video>`:`<img src="${m.data}" alt="">`;
+    });
+  },
+
+  openEdit(id){
+    this.editingId=id;
+    const c=id?this.contestants.find(x=>x.id===id):null;
+    document.getElementById('editTitle').textContent=c?'编辑选手':'新增选手';
+    document.getElementById('editNum').value=c?c.num:'';
+    document.getElementById('editName').value=c?c.name:'';
+    document.getElementById('editErr').classList.remove('show');
+    document.getElementById('editSheet').classList.add('open');
+  },
+
+  async saveContestant(){
+    const num=document.getElementById('editNum').value.trim();
+    const name=document.getElementById('editName').value.trim();
+    const err=document.getElementById('editErr'); err.classList.remove('show');
+    if(!num||!name){ err.textContent='号码和名字都必须填写'; err.classList.add('show'); return; }
+    const dup=this.contestants.find(c=>c.num===num&&c.id!==this.editingId);
+    if(dup){ err.textContent=`号码 ${num} 已被 ${dup.name} 使用`; err.classList.add('show'); return; }
+    if(this.editingId){
+      const c=this.contestants.find(x=>x.id===this.editingId); c.num=num; c.name=name;
+    } else {
+      this.contestants.push({id:'c-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),num,name,hasMedia:false});
+    }
+    const ok=await this.sSet('contestants',this.contestants,true);
+    if(!ok){ this.toast('保存失败,请重试'); return; }
+    this.closeSheet('editSheet'); this.toast('已保存');
+    this.buildFeed(); this.renderAdmin();
+  },
+
+  async deleteContestant(id){
+    const c=this.contestants.find(x=>x.id===id);
+    if(!confirm(`确定删除 No.${c.num} ${c.name}?其影像也会一并删除。`)) return;
+    this.contestants=this.contestants.filter(x=>x.id!==id);
+    await this.sSet('contestants',this.contestants,true);
+    await this.sDel('media:'+id,true);
+    this.toast('已删除'); this.buildFeed(); this.renderAdmin();
+  },
+
+  async resetVotes(){
+    if(!confirm('确定清空所有投票记录?所有观众将重新获得 2 票。')) return;
+    const keys=await this.sList('ballot:',true);
+    for(const k of keys) await this.sDel(k,true);
+    await this.sDel('my-votes',false);
+    this.myVotes=[]; this.tally={}; this.totalVotes=0; this.voterCount=0;
+    this.toast('已清空所有投票');
+    this.buildFeed(); this.updateTickets(); this.renderAdmin();
+  },
+
+  /* ---------- 拍摄 ---------- */
+  async openCam(cid){
+    this.camTargetId=cid; this.pendingMedia=null;
+    const c=this.contestants.find(x=>x.id===cid);
+    document.getElementById('camWho').textContent=`No.${c.num} ${c.name}`;
+    document.getElementById('camSheet').classList.add('open');
+    this.showCamState('live');
+    try{
+      this.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:720},height:{ideal:960}},audio:true});
+      document.getElementById('camPreview').srcObject=this.stream;
+      document.getElementById('camHint').textContent='视频最长 15 秒,自动压缩后同步给所有观众。';
+    }catch(e){
+      document.getElementById('camHint').textContent='相机无法打开(权限或环境限制),请使用「从相册上传」。';
+    }
+  },
+
+  showCamState(state){
+    document.getElementById('camPreview').style.display=state==='live'?'':'none';
+    document.getElementById('camPhoto').style.display='none';
+    document.getElementById('camPlayback').style.display='none';
+    document.getElementById('camControls').style.display=state==='live'?'grid':'none';
+    document.getElementById('confirmControls').style.display=state==='preview'?'grid':'none';
+    if(state==='preview'&&this.pendingMedia){
+      if(this.pendingMedia.type==='image'){
+        const img=document.getElementById('camPhoto'); img.src=this.pendingMedia.data; img.style.display='';
+      } else {
+        const v=document.getElementById('camPlayback'); v.src=this.pendingMedia.data; v.style.display='';
+      }
+    }
+  },
+
+  snapPhoto(){
+    const video=document.getElementById('camPreview');
+    if(!this.stream||!video.videoWidth){ this.toast('相机未就绪,请用相册上传'); return; }
+    const canvas=document.createElement('canvas');
+    const scale=Math.min(1,1000/video.videoWidth);
+    canvas.width=video.videoWidth*scale; canvas.height=video.videoHeight*scale;
+    canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+    this.pendingMedia={type:'image',data:canvas.toDataURL('image/jpeg',0.84)};
+    this.showCamState('preview');
+  },
+
+  toggleRecord(){
+    if(this.recorder&&this.recorder.state==='recording'){ this.recorder.stop(); return; }
+    if(!this.stream){ this.toast('相机未就绪,请用相册上传'); return; }
+    this.recChunks=[];
+    let mime='video/webm';
+    if(MediaRecorder.isTypeSupported('video/mp4')) mime='video/mp4';
+    else if(MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) mime='video/webm;codecs=vp8';
+    try{ this.recorder=new MediaRecorder(this.stream,{mimeType:mime,videoBitsPerSecond:800000}); }
+    catch(e){ this.recorder=new MediaRecorder(this.stream); }
+    this.recorder.ondataavailable=e=>{ if(e.data.size) this.recChunks.push(e.data); };
+    this.recorder.onstop=()=>{
+      clearInterval(this.recTimer);
+      document.getElementById('recDot').classList.remove('on');
+      document.getElementById('recBtn').textContent='● 录像 15s';
+      const blob=new Blob(this.recChunks,{type:this.recorder.mimeType||'video/webm'});
+      const reader=new FileReader();
+      reader.onload=()=>{
+        if(reader.result.length>MAX_MEDIA_BYTES*1.4){ this.toast('视频过大,请录短一点或改用照片'); return; }
+        this.pendingMedia={type:'video',data:reader.result};
+        this.showCamState('preview');
+      };
+      reader.readAsDataURL(blob);
+    };
+    this.recorder.start();
+    let sec=0;
+    document.getElementById('recDot').classList.add('on');
+    document.getElementById('recBtn').textContent='■ 停止';
+    document.getElementById('recTime').textContent='0s';
+    this.recTimer=setInterval(()=>{
+      sec++; document.getElementById('recTime').textContent=sec+'s';
+      if(sec>=MAX_REC_SECONDS&&this.recorder.state==='recording') this.recorder.stop();
+    },1000);
+  },
+
+  onFile(input){
+    const file=input.files&&input.files[0]; input.value='';
+    if(!file) return;
+    const isVideo=file.type.startsWith('video');
+    if(isVideo&&file.size>MAX_MEDIA_BYTES){ this.toast('视频超过 4MB,请选更短的或改用照片'); return; }
+    const reader=new FileReader();
+    reader.onload=()=>{
+      if(isVideo){ this.pendingMedia={type:'video',data:reader.result}; this.showCamState('preview'); }
+      else{
+        const img=new Image();
+        img.onload=()=>{
+          const canvas=document.createElement('canvas');
+          const scale=Math.min(1,1000/Math.max(img.width,img.height));
+          canvas.width=img.width*scale; canvas.height=img.height*scale;
+          canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+          this.pendingMedia={type:'image',data:canvas.toDataURL('image/jpeg',0.84)};
+          this.showCamState('preview');
+        };
+        img.src=reader.result;
+      }
+    };
+    reader.readAsDataURL(file);
+  },
+
+  retake(){ this.pendingMedia=null; this.showCamState('live'); },
+
+  async useMedia(){
+    if(!this.pendingMedia) return;
+    if(this.pendingMedia.data.length>MAX_MEDIA_BYTES*1.4){ this.toast('文件过大,无法保存'); return; }
+    const btn=document.getElementById('useMediaBtn');
+    btn.disabled=true; btn.textContent='上传中…';
+    const ok=await this.sSet('media:'+this.camTargetId,this.pendingMedia,true);
+    btn.disabled=false; btn.textContent='使用这段';
+    if(!ok){ this.toast('上传失败(可能文件太大),请重试'); return; }
+    const c=this.contestants.find(x=>x.id===this.camTargetId);
+    if(c&&!c.hasMedia){ c.hasMedia=true; await this.sSet('contestants',this.contestants,true); }
+    this.toast('影像已同步,所有观众都能看到');
+    this.closeCam(); this.buildFeed(); this.renderAdmin();
+  },
+
+  closeCam(){
+    if(this.recorder&&this.recorder.state==='recording'){ try{this.recorder.stop();}catch(e){} }
+    clearInterval(this.recTimer);
+    if(this.stream){ this.stream.getTracks().forEach(t=>t.stop()); this.stream=null; }
+    document.getElementById('camPreview').srcObject=null;
+    document.getElementById('camSheet').classList.remove('open');
+  },
+};
+
+document.getElementById('pinInput').addEventListener('keydown',e=>{ if(e.key==='Enter') App.checkPin(); });
+App.init();
+</script>
+</body>
+</html>
